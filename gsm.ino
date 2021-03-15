@@ -140,12 +140,10 @@ void gpsData()
     Serial.print("altitude: ");
     Serial.println(altitude);
 
-    BLYNK_WRITE(V1);
-      table.addRow("Latitude", latitude);
-    /*
+   
     Blynk.virtualWrite(V1, double(latitude),5);
     Blynk.virtualWrite(V2, double(longitude),5);
-    myMap.location(index, latitude, longitude, "Lokasi Terkini"); */
+    myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
   }
 }
 
