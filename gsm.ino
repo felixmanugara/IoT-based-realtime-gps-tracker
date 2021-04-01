@@ -8,6 +8,7 @@
 #define I2C_SCL              22
 #define LED                  13
 
+
 #define BLYNK_PRINT Serial    
 #define BLYNK_HEARTBEAT 30
 #define TINY_GSM_MODEM_SIM800
@@ -32,12 +33,17 @@ double longitude;
 //int satellites;
 //String direction;
 
+#define Threshold 40 // semakin besar nilainya maka semakin sensitif 
 
-const char apn[]  = "indosatgprs";
+// variabel untuk menyimpan data boot number
+RTC_DATA_ATTR int bootCount = 0;
+touch_pad_t touchPin;
+
+const char apn[]  = "internet";
 const char user[] = "";
 const char pass[] = "";
 
-// ini adalah token authentifikasi untuk aplikasi blynk
+// ini adalah token autentifikasi untuk aplikasi blynk
 const char auth[] = "tTRE5J-DSIWucdJyRYgqvQhEolfhHbRf";
 
 // membuat instance modem untuk modul GSM
@@ -51,7 +57,7 @@ void setup()
 {
   // set baud rate untuk serial monitor
   Serial.begin(9600);
-  delay(10);
+  delay(1000);
 
   // kode ini berguna agar ESP32 dapat bekerja dengan daya baterai
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -63,6 +69,7 @@ void setup()
   pinMode(MODEM_RST, OUTPUT);
   pinMode(MODEM_POWER_ON, OUTPUT);
   pinMode(LED, OUTPUT);
+  // pinMode(BUTTON,INPUT_PULLUP);
 
   digitalWrite(MODEM_PWKEY, LOW);
   digitalWrite(MODEM_RST, HIGH);
@@ -80,8 +87,6 @@ void setup()
   SerialMon.print("Modem: ");
   SerialMon.println(modulInfo);
 
-  
-
    SerialMon.print("Menunggu jaringan...");
   if (!modem.waitForNetwork(240000L)) {
     SerialMon.println(" gagal");
@@ -92,6 +97,8 @@ void setup()
 
   if (modem.isNetworkConnected()) {
     digitalWrite(LED, HIGH);
+    delay(500);
+    digitalWrite(LED, LOW);
     SerialMon.println("Jaringan terhubung");
   } 
  
@@ -105,6 +112,21 @@ void setup()
   SerialMon.println(" berhasil");
 
   Blynk.begin(auth, modem, apn, user, pass);
+
+  ++bootCount;
+  Serial.println("Boot Number: " + String(bootCount));
+
+  print_wakeup_reason();
+  print_wakeup_touchpad();
+
+  touchAttachInterrupt(T3, Callback, Threshold);
+
+  esp_sleep_enable_touchpad_wakeup();
+
+  Serial.println("modul akan tidur");
+  esp_deep_sleep_start();
+
+
 }
 
 void loop()
@@ -120,7 +142,7 @@ void loop()
   {
     Serial.println(F("GPS tidak terdeteksi"));
   }
-     
+  
   Blynk.run();
 }
 
@@ -147,6 +169,32 @@ void gpsData()
   }
 }
 
+
+void Callback(){
+  //void setup();
+  void loop();
+}
+void print_wakeup_reason(){
+  esp_sleep_wakeup_cause_t wakeup_reason;
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  switch(wakeup_reason)
+  {
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("bangun dari deepsleep dengan touchpad"); break;
+    default : Serial.printf("bangun bukan disebabkan oleh deepsleep: %d\n",wakeup_reason); break;
+  }
+}
+
+void print_wakeup_touchpad(){
+  touchPin = esp_sleep_get_touchpad_wakeup_status();
+
+  switch(touchPin)
+  {
+    case 01 : Serial.println("sentuhan terdeteksi pada GPIO 15");
+    default : Serial.println("bangun tidak disebabkan oleh deepsleep");
+  }
+}
 /*
 void dateData()
 {
