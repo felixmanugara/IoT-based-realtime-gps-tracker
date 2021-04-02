@@ -33,12 +33,6 @@ double longitude;
 //int satellites;
 //String direction;
 
-#define Threshold 40 // semakin besar nilainya maka semakin sensitif 
-
-// variabel untuk menyimpan data boot number
-RTC_DATA_ATTR int bootCount = 0;
-touch_pad_t touchPin;
-
 const char apn[]  = "internet";
 const char user[] = "";
 const char pass[] = "";
@@ -113,20 +107,6 @@ void setup()
 
   Blynk.begin(auth, modem, apn, user, pass);
 
-  ++bootCount;
-  Serial.println("Boot Number: " + String(bootCount));
-
-  print_wakeup_reason();
-  print_wakeup_touchpad();
-
-  touchAttachInterrupt(T3, Callback, Threshold);
-
-  esp_sleep_enable_touchpad_wakeup();
-
-  Serial.println("modul akan tidur");
-  esp_deep_sleep_start();
-
-
 }
 
 void loop()
@@ -169,32 +149,6 @@ void gpsData()
   }
 }
 
-
-void Callback(){
-  //void setup();
-  void loop();
-}
-void print_wakeup_reason(){
-  esp_sleep_wakeup_cause_t wakeup_reason;
-
-  wakeup_reason = esp_sleep_get_wakeup_cause();
-
-  switch(wakeup_reason)
-  {
-    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("bangun dari deepsleep dengan touchpad"); break;
-    default : Serial.printf("bangun bukan disebabkan oleh deepsleep: %d\n",wakeup_reason); break;
-  }
-}
-
-void print_wakeup_touchpad(){
-  touchPin = esp_sleep_get_touchpad_wakeup_status();
-
-  switch(touchPin)
-  {
-    case 01 : Serial.println("sentuhan terdeteksi pada GPIO 15");
-    default : Serial.println("bangun tidak disebabkan oleh deepsleep");
-  }
-}
 /*
 void dateData()
 {
@@ -207,4 +161,4 @@ void dateData()
     Serial.print("/");
     Serial.println(gps.date.year());
   }
-} */
+} */ 
