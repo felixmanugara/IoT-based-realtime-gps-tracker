@@ -128,10 +128,10 @@ void loop()
 
 void GPSData() 
 {
-  while (Serial.available() > 0)
-  {
-    if (gps.encode(Serial.read()))
-        if (gps.location.isValid())  
+  if (gps.location.isValid())  
+    while (Serial.available() > 0)
+    {
+      if (gps.encode(Serial.read()))
         {
           unsigned int index = 1;
           latitude = gps.location.lat();
@@ -141,9 +141,9 @@ void GPSData()
     
           Blynk.virtualWrite(V1, latitude,",");
           Blynk.virtualWrite(V2, longitude,",");
-          Serial.println(j + String(satellite));
+          Serial.println(j + int(satellite));
           myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
-         }
+        }
   }
 }
 
