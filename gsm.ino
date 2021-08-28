@@ -10,16 +10,11 @@
 #define RELAY                14
 
 #define BLYNK_PRINT Serial    
-#define BLYNK_HEARTBEAT 30
 #define TINY_GSM_MODEM_SIM800
 
 #include <TinyGPS++.h>
 #include <TinyGsmClient.h>
 #include <BlynkSimpleSIM800.h>
-
-
-#include <Wire.h>
-#include "settings.h"
 
 // set serial monitor untuk modul gsm dan gps
 #define SerialMon Serial
@@ -27,29 +22,13 @@
 // komunikasi serial untuk modul gsm
 #define SerialAT Serial1
 
-void SMSData();
-
-// kode di bawah merupakan button untuk sms
-BLYNK_WRITE(V5)
-{
-  int pinValue = param.asInt();
-  if (pinValue == 1) {
-    SMSData();
-  }
-}
-
-// kode di bawah merupakan button untuk Buzzer
-
-
 
 // variabel untuk menyimpan data GPS
 double latitude;
 double longitude;
-//float altitude;
-//float kecepatan;
-//int satellite;
-//String arah;
+float satellite;
 
+// variabel untuk data isp
 const char apn[]  = "indosatgprs";
 const char user[] = "indosat";
 const char pass[] = "indosatgprs";
@@ -68,29 +47,11 @@ TinyGsm modem(SerialAT);
 TinyGPSPlus gps;
 WidgetMap myMap(V0);
 
-BLYNK_WRITE(V3)
-{
-  int buzzValue = param.asInt();
-  if(buzzValue == 1) {
-    digitalWrite(RELAY, LOW);
-    s1 = true;
-  } else{
-    digitalWrite(RELAY, HIGH);
-    s1 = false;
-  }
-
-}
-
 void setup()
 {
   // set baud rate untuk serial monitor
   Serial.begin(9600);
   delay(10);
-
-  // kode ini berguna agar ESP32 dapat bekerja dengan daya baterai
-  Wire.begin(I2C_SDA, I2C_SCL);
-  bool   isOk = setPowerBoostKeepOn(1);
-  SerialMon.println(String("IP5306 KeepOn ") + (isOk ? "OK" : "FAIL"));
 
   // Set-up modem reset, enable, power pins
   pinMode(MODEM_PWKEY, OUTPUT);
@@ -104,7 +65,7 @@ void setup()
   digitalWrite(MODEM_POWER_ON, HIGH);
   digitalWrite(RELAY, HIGH);
 
-  // pengaturan baud rate untuk modul GSM dan komunikasi UART
+  // pengaturan baudrate untuk modul GSM dan komunikasi UART
   SerialAT.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
   delay(3000);
 
@@ -144,36 +105,22 @@ void setup()
   SerialMon.println(" berhasil");
 
   Blynk.begin(auth, modem, apn, user, pass);
-  timer.setInterval(5000L, GPSInfo);
 
-  if (Blynk.connected()) {
+  if (Blynk.connected())
+  {
     digitalWrite(LED, HIGH);
     delay(2000);
     digitalWrite(LED, LOW);
   }
-
-
+  
+  timer.setInterval(2000L, GPSData);
+  timer.setInterval(5000L, GPSCheck);
 }
  
-void GPSInfo() 
-{
-  if (gps.charsProcessed() < 10)
-   {
-      Serial.println("GPS tidak terdeteksi");
-      Blynk.virtualWrite(V1, "Lokasi tidak Terdeteksi");
-   }
-}
 
 void loop()
 {
   
-  while (Serial.available() > 0)
-  {
-    if (gps.encode(Serial.read()))
-       GPSData();
-        
-  }
-
   Blynk.run();
   timer.run(); 
   
@@ -181,32 +128,49 @@ void loop()
 
 void GPSData() 
 {
-  if (gps.location.isValid())
+  while (Serial.available() > 0)
   {
-    unsigned int index = 1;
-    latitude = gps.location.lat();
-    longitude = gps.location.lng();
-    //altitude = gps.altitude.meters();
-    //kecepatan = gps.speed.kmph();
-    //arah = TinyGPSPlus::cardinal(gps.course.value());
-    //satellite = gps.satellites.value();
-
-    Blynk.virtualWrite(V1, latitude,",");
-    Blynk.virtualWrite(V2, longitude,",");
-    //Blynk.virtualWrite(V3, kecepatan, " Kmph");
-    //Blynk.virtualWrite(V4, arah);
+    if (gps.encode(Serial.read()))
+        if (gps.location.isValid())  
+        {
+          unsigned int index = 1;
+          latitude = gps.location.lat();
+          longitude = gps.location.lng();
+          satellite = gps.satellites.value();
+          String j = "jumlah satelit saat ini: ";
     
-    myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
+          Blynk.virtualWrite(V1, latitude,",");
+          Blynk.virtualWrite(V2, longitude,",");
+          Serial.println(j + String(satellite));
+          myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
+         }
   }
 }
 
-void SMSData() 
+void GPSCheck()
 {
-  String no_hp = "+6281219918587";
-  String sms = "Latitude" + String(latitude) + " Longitude" + String(longitude);
-  modem.sendSMS(no_hp, sms);
-  //Serial.println("berhasil mengirim sms");
-  digitalWrite(LED, HIGH);
-  delay(1000);
-  digitalWrite(LED, LOW);
+  if ((gps.charsProcessed() < 5) && (!gps.location.isUpdated()))
+  {
+    Serial.println("GPS tidak terdeteksi");
+    Blynk.notify("Gagal mendeteksi lokasi!!!");
+  }
 }
+
+BLYNK_WRITE(V3)
+{
+  int pinValue = param.asInt();
+  if (pinValue == 1) {
+    digitalWrite(RELAY, LOW);
+    s1 = true;
+  } else {
+    digitalWrite(RELAY, HIGH);
+    s1 = false;
+  }
+}
+
+
+ 
+
+
+
+  
