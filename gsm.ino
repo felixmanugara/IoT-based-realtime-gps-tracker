@@ -7,6 +7,7 @@
 #define I2C_SDA              21
 #define I2C_SCL              22
 #define LED                  13
+#define RELAY                14
 
 #define BLYNK_PRINT Serial    
 #define BLYNK_HEARTBEAT 30
@@ -15,6 +16,7 @@
 #include <TinyGPS++.h>
 #include <TinyGsmClient.h>
 #include <BlynkSimpleSIM800.h>
+
 
 #include <Wire.h>
 #include "settings.h"
@@ -26,7 +28,6 @@
 #define SerialAT Serial1
 
 void SMSData();
-void buzzer_State();
 
 // kode di bawah merupakan button untuk sms
 BLYNK_WRITE(V5)
@@ -38,36 +39,26 @@ BLYNK_WRITE(V5)
 }
 
 // kode di bawah merupakan button untuk Buzzer
-BLYNK_WRITE(V6)
-{
-  int buzzValue = param.asInt();
-  if(buzzValue == 1) {
-    buzzer_State();
-  }
 
-}
 
 
 // variabel untuk menyimpan data GPS
 double latitude;
 double longitude;
-float altitude;
-float kecepatan;
-int satellite;
-String arah;
-
-// variable untuk fungsi SMS
-
-
+//float altitude;
+//float kecepatan;
+//int satellite;
+//String arah;
 
 const char apn[]  = "indosatgprs";
-const char user[] = "";
-const char pass[] = "";
+const char user[] = "indosat";
+const char pass[] = "indosatgprs";
 
 // ini adalah token autentifikasi untuk aplikasi blynk
 const char auth[] = "tTRE5J-DSIWucdJyRYgqvQhEolfhHbRf";
 
-int BUZZER = 2;
+bool s1;
+
 BlynkTimer timer;
 
 // membuat instance modem untuk modul GSM
@@ -76,6 +67,19 @@ TinyGsm modem(SerialAT);
 // membuat instance untuk modul GPS
 TinyGPSPlus gps;
 WidgetMap myMap(V0);
+
+BLYNK_WRITE(V3)
+{
+  int buzzValue = param.asInt();
+  if(buzzValue == 1) {
+    digitalWrite(RELAY, LOW);
+    s1 = true;
+  } else{
+    digitalWrite(RELAY, HIGH);
+    s1 = false;
+  }
+
+}
 
 void setup()
 {
@@ -93,11 +97,12 @@ void setup()
   pinMode(MODEM_RST, OUTPUT);
   pinMode(MODEM_POWER_ON, OUTPUT);
   pinMode(LED, OUTPUT);
-  pinMode(BUZZER, OUTPUT);
+  pinMode(RELAY, OUTPUT);
   
   digitalWrite(MODEM_PWKEY, LOW);
   digitalWrite(MODEM_RST, HIGH);
   digitalWrite(MODEM_POWER_ON, HIGH);
+  digitalWrite(RELAY, HIGH);
 
   // pengaturan baud rate untuk modul GSM dan komunikasi UART
   SerialAT.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
@@ -142,9 +147,9 @@ void setup()
   timer.setInterval(5000L, GPSInfo);
 
   if (Blynk.connected()) {
-    digitalWrite(BUZZER, HIGH);
-    delay(1000);
-    digitalWrite(BUZZER, LOW);
+    digitalWrite(LED, HIGH);
+    delay(2000);
+    digitalWrite(LED, LOW);
   }
 
 
@@ -155,7 +160,7 @@ void GPSInfo()
   if (gps.charsProcessed() < 10)
    {
       Serial.println("GPS tidak terdeteksi");
-      Blynk.virtualWrite(V4, "Lokasi tidak Terdeteksi");
+      Blynk.virtualWrite(V1, "Lokasi tidak Terdeteksi");
    }
 }
 
@@ -182,14 +187,14 @@ void GPSData()
     latitude = gps.location.lat();
     longitude = gps.location.lng();
     //altitude = gps.altitude.meters();
-    kecepatan = gps.speed.kmph();
-    arah = TinyGPSPlus::cardinal(gps.course.value());
+    //kecepatan = gps.speed.kmph();
+    //arah = TinyGPSPlus::cardinal(gps.course.value());
     //satellite = gps.satellites.value();
 
-    Blynk.virtualWrite(V1, double(latitude),",");
-    Blynk.virtualWrite(V2, double(longitude),",");
-    Blynk.virtualWrite(V3, kecepatan);
-    Blynk.virtualWrite(V4, arah);
+    Blynk.virtualWrite(V1, latitude,",");
+    Blynk.virtualWrite(V2, longitude,",");
+    //Blynk.virtualWrite(V3, kecepatan, " Kmph");
+    //Blynk.virtualWrite(V4, arah);
     
     myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
   }
@@ -204,10 +209,4 @@ void SMSData()
   digitalWrite(LED, HIGH);
   delay(1000);
   digitalWrite(LED, LOW);
-}
-
-void buzzer_State() {
-  digitalWrite(BUZZER, HIGH);
-  delay(1000);
-  digitalWrite(BUZZER, LOW);
 }
