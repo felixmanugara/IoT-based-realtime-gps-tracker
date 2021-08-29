@@ -128,10 +128,10 @@ void loop()
 
 void GPSData() 
 {
-  if (gps.location.isValid())  
     while (Serial.available() > 0)
     {
       if (gps.encode(Serial.read()))
+        if (gps.location.isValid()) 
         {
           unsigned int index = 1;
           latitude = gps.location.lat();
