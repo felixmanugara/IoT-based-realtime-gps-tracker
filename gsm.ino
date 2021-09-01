@@ -156,8 +156,8 @@ void GPSCheck()
   }
   if ((gps.charsProcessed() < 5) && (!gps.location.isUpdated()))
   {
-    Serial.println("Sensor GPS terlepas cek pengkabelan!!")
-    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!")
+    Serial.println("Sensor GPS terlepas cek pengkabelan!!");
+    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!");
   }
 }
 
