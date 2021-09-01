@@ -4,8 +4,6 @@
 #define MODEM_POWER_ON       23
 #define MODEM_TX             27
 #define MODEM_RX             26
-#define I2C_SDA              21
-#define I2C_SCL              22
 #define LED                  13
 #define RELAY                14
 #define BLYNK_PRINT Serial    
