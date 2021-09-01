@@ -149,10 +149,15 @@ void GPSData()
 
 void GPSCheck()
 {
-  if ((gps.charsProcessed() < 5) && (!gps.location.isUpdated()))
+  if ((gps.charsProcessed() < 5) || (!gps.location.isValid()))
   {
     Serial.println("GPS tidak terdeteksi");
-    Blynk.notify("Gagal mendeteksi lokasi!!!");
+    Blynk.virtualWrite(V1, "Gagal mendeteksi lokasi!!");
+  }
+  if ((gps.charsProcessed() < 5) && (!gps.location.isUpdated()))
+  {
+    Serial.println("Sensor GPS terlepas cek pengkabelan!!")
+    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!")
   }
 }
 
