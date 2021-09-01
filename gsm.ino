@@ -8,34 +8,27 @@
 #define I2C_SCL              22
 #define LED                  13
 #define RELAY                14
-
 #define BLYNK_PRINT Serial    
 #define TINY_GSM_MODEM_SIM800
 
 #include <TinyGPS++.h>
 #include <TinyGsmClient.h>
 #include <BlynkSimpleSIM800.h>
-
 // set serial monitor untuk modul gsm dan gps
 #define SerialMon Serial
-
 // komunikasi serial untuk modul gsm
 #define SerialAT Serial1
-
-
 // variabel untuk menyimpan data GPS
 double latitude;
 double longitude;
 int satellite;
-
 // variabel untuk data isp
 const char apn[]  = "indosatgprs";
 const char user[] = "indosat";
 const char pass[] = "indosatgprs";
-
 // ini adalah token autentifikasi untuk aplikasi blynk
 const char auth[] = "tTRE5J-DSIWucdJyRYgqvQhEolfhHbRf";
-
+//
 bool s1;
 
 BlynkTimer timer;
@@ -46,6 +39,53 @@ TinyGsm modem(SerialAT);
 // membuat instance untuk modul GPS
 TinyGPSPlus gps;
 WidgetMap myMap(V0);
+
+void GPSData() 
+{
+    while (Serial.available() > 0)
+    {
+      if (gps.encode(Serial.read()))
+        if (gps.location.isValid()) 
+        {
+          unsigned int index = 1;
+          latitude = gps.location.lat();
+          longitude = gps.location.lng();
+          satellite = gps.satellites.value();
+          String j = "jumlah satelit saat ini: ";
+    
+          Blynk.virtualWrite(V1, latitude,",");
+          Blynk.virtualWrite(V2, longitude,",");
+          Serial.println(j + String(satellite));
+          myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
+        }
+  }
+}
+
+void GPSCheck()
+{
+  if ((gps.charsProcessed() < 10) || (!gps.location.isValid()))
+  {
+    Serial.println("GPS tidak terdeteksi");
+    Blynk.virtualWrite(V1, "Gagal mendeteksi lokasi!!");
+  }
+  if ((gps.charsProcessed() <= 5) && (!gps.location.isUpdated()))
+  {
+    Serial.println("Sensor GPS terlepas cek pengkabelan!!");
+    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!");
+  }
+}
+
+BLYNK_WRITE(V3)
+{
+  int pinValue = param.asInt();
+  if (pinValue == 1) {
+    digitalWrite(RELAY, LOW);
+    s1 = true;
+  } else {
+    digitalWrite(RELAY, HIGH);
+    s1 = false;
+  }
+}
 
 void setup()
 {
@@ -126,52 +166,6 @@ void loop()
   
 }
 
-void GPSData() 
-{
-    while (Serial.available() > 0)
-    {
-      if (gps.encode(Serial.read()))
-        if (gps.location.isValid()) 
-        {
-          unsigned int index = 1;
-          latitude = gps.location.lat();
-          longitude = gps.location.lng();
-          satellite = gps.satellites.value();
-          String j = "jumlah satelit saat ini: ";
-    
-          Blynk.virtualWrite(V1, latitude,",");
-          Blynk.virtualWrite(V2, longitude,",");
-          Serial.println(j + String(satellite));
-          myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
-        }
-  }
-}
-
-void GPSCheck()
-{
-  if ((gps.charsProcessed() < 10) || (!gps.location.isValid()))
-  {
-    Serial.println("GPS tidak terdeteksi");
-    Blynk.virtualWrite(V1, "Gagal mendeteksi lokasi!!");
-  }
-  if ((gps.charsProcessed() <= 5) && (!gps.location.isUpdated()))
-  {
-    Serial.println("Sensor GPS terlepas cek pengkabelan!!");
-    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!");
-  }
-}
-
-BLYNK_WRITE(V3)
-{
-  int pinValue = param.asInt();
-  if (pinValue == 1) {
-    digitalWrite(RELAY, LOW);
-    s1 = true;
-  } else {
-    digitalWrite(RELAY, HIGH);
-    s1 = false;
-  }
-}
 
 
  
