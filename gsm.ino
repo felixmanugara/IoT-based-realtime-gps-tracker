@@ -26,7 +26,7 @@
 // variabel untuk menyimpan data GPS
 double latitude;
 double longitude;
-float satellite;
+int satellite;
 
 // variabel untuk data isp
 const char apn[]  = "indosatgprs";
@@ -141,7 +141,7 @@ void GPSData()
     
           Blynk.virtualWrite(V1, latitude,",");
           Blynk.virtualWrite(V2, longitude,",");
-          Serial.println(j + int(satellite));
+          Serial.println(j + String(satellite));
           myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
         }
   }
@@ -149,12 +149,12 @@ void GPSData()
 
 void GPSCheck()
 {
-  if ((gps.charsProcessed() < 5) || (!gps.location.isValid()))
+  if ((gps.charsProcessed() < 10) || (!gps.location.isValid()))
   {
     Serial.println("GPS tidak terdeteksi");
     Blynk.virtualWrite(V1, "Gagal mendeteksi lokasi!!");
   }
-  if ((gps.charsProcessed() < 5) && (!gps.location.isUpdated()))
+  if ((gps.charsProcessed() <= 5) && (!gps.location.isUpdated()))
   {
     Serial.println("Sensor GPS terlepas cek pengkabelan!!");
     Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!");
