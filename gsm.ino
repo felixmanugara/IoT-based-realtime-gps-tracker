@@ -54,9 +54,11 @@ void GPSData()
           Blynk.virtualWrite(V1, latitude,",");
           Blynk.virtualWrite(V2, longitude,",");
           Serial.println(j + String(satellite));
-          myMap.location(index, latitude, longitude, "Lokasi Terkini"); 
+          myMap.location(index, latitude, longitude, "Lokasi Terkini");
+         
         }
   }
+   
 }
 
 void GPSCheck()
@@ -65,12 +67,10 @@ void GPSCheck()
   {
     Serial.println("GPS tidak terdeteksi");
     Blynk.virtualWrite(V1, "Gagal mendeteksi lokasi!!");
+    Blynk.virtualWrite(V2, "mencari titik lokasi, Mohon tunggu");
+    Blynk.notify("jika titik lokasi tidak kunjung ditemukan, cek perkabelan bila perlu");
   }
-  if ((gps.charsProcessed() <= 5) && (!gps.location.isUpdated()))
-  {
-    Serial.println("Sensor GPS terlepas cek pengkabelan!!");
-    Blynk.notify("Modul GPS mungkin terlepas cek pengkabelan!!");
-  }
+  return;
 }
 
 BLYNK_WRITE(V3)
@@ -152,7 +152,7 @@ void setup()
   }
   
   timer.setInterval(2000L, GPSData);
-  timer.setInterval(5000L, GPSCheck);
+  timer.setInterval(50000L, GPSCheck);
 }
  
 
