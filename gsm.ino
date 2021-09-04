@@ -38,6 +38,16 @@ TinyGsm modem(SerialAT);
 TinyGPSPlus gps;
 WidgetMap myMap(V0);
 
+void GPSData_mem_addr(double *latitude, double *longitude) 
+{
+  *latitude;
+  *longitude;
+  Serial.print("latitude mem address: ");
+  Serial.println((unsigned int)latitude,HEX);
+  Serial.print("longitude mem address: ");
+  Serial.println((unsigned int)longitude,HEX);
+}
+
 void GPSData() 
 {
     while (Serial.available() > 0)
@@ -53,12 +63,11 @@ void GPSData()
     
           Blynk.virtualWrite(V1, latitude,",");
           Blynk.virtualWrite(V2, longitude,",");
-          Serial.println(j + String(satellite));
+          //Serial.println(j + String(satellite));
           myMap.location(index, latitude, longitude, "Lokasi Terkini");
-         
+          GPSData_mem_addr(&latitude,&longitude);
         }
-  }
-   
+    }
 }
 
 void GPSCheck()
