@@ -50,10 +50,23 @@ void GPSData()
           longitude = gps.location.lng();
           satellite = gps.satellites.value();
           String j = "jumlah satelit saat ini: ";
-    
-          Blynk.virtualWrite(V1, latitude,",");
-          Blynk.virtualWrite(V2, longitude,",");
-          Serial.println(j + String(satellite));
+
+       /* Serial.print(latitude,6);
+          Serial.print(", ");
+          Serial.print(longitude,6);
+          Serial.print(", ");
+          Serial.print(satellite);
+          Serial.print(", ");
+          Serial.print(speeds);
+          Serial.print(", ");
+          Serial.print(alt);
+          Serial.print(", ");
+          Serial.print(days);
+          Serial.print("/");
+          Serial.print(months);
+          Serial.print("/");
+          Serial.println(years);
+        */  
           myMap.location(index, latitude, longitude, "Lokasi Terkini");
          
         }
