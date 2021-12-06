@@ -12,4 +12,4 @@ berikut komponen yang digunakan dalam membuat project ini.
 
 berikut rangkaian keseluruhan dari komponen.
 
-![ScreenShot](/GPS_tracker_final.png)
+![ScreenShot](https://github.com/felixmanugara/GPS_Tracker/blob/main/GPS_Tracker_final.png)
