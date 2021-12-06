@@ -20,7 +20,7 @@
 double latitude;
 double longitude;
 int satellite;
-// variabel untuk data isp
+// use this APN settings if you using Indosat
 const char apn[]  = "indosatgprs";
 const char user[] = "indosat";
 const char pass[] = "indosatgprs";
