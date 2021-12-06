@@ -38,6 +38,17 @@ TinyGsm modem(SerialAT);
 TinyGPSPlus gps;
 WidgetMap myMap(V0);
 
+// this function print memory address of given varible value
+void GPSData_mem_addr(double *latitude, double *longitude) 
+{
+  *latitude;
+  *longitude;
+  Serial.print("latitude mem address: ");
+  Serial.println((unsigned int)latitude,HEX);
+  Serial.print("longitude mem address: ");
+  Serial.println((unsigned int)longitude,HEX);
+}
+
 void GPSData() 
 {
     while (Serial.available() > 0)
@@ -68,10 +79,10 @@ void GPSData()
           Serial.println(years);
         */  
           myMap.location(index, latitude, longitude, "Lokasi Terkini");
-         
+          // return memory address of given variable
+          GPSData_mem_addr(&latitude,&longitude);
         }
-  }
-   
+    }
 }
 
 void GPSCheck()
