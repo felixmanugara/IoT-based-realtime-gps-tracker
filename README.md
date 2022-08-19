@@ -12,4 +12,5 @@ berikut komponen yang digunakan dalam membuat project ini.
 
 berikut rangkaian keseluruhan dari komponen.
 
-![ScreenShot](https://github.com/felixmanugara/GPS_Tracker/blob/main/GPS_Tracker_final.png)
+![ScreenShot](https://github.com/felixmanugara/IoT-based-realtime-gps-location-tracker/blob/main/gps_tracker_final.png)
+
